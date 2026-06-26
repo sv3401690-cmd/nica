@@ -652,16 +652,9 @@
         </div>
     </div>
 
-    <!-- SVG Filter for Full-Screen Ripple Distortion (Inline-Refraction GPU-based) -->
-    <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
+    <!-- The off-screen displacement map source (must be rendered in DOM outside defs so feImage can capture it) -->
+    <svg style="position: absolute; top: -9999px; left: -9999px; width: 100vw; height: 100vh; pointer-events: none;">
         <defs>
-            <!-- The displacement map source: neutral gray base with concentric white/black rings -->
-            <g id="ripple-source">
-                <rect width="100%" height="100%" fill="#808080" />
-                <circle id="ripple-circle-0" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="0" />
-                <circle id="ripple-circle-1" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="0" />
-                <circle id="ripple-circle-2" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="0" />
-            </g>
             <!-- The ripple wave packet gradient -->
             <radialGradient id="ripple-grad" cx="50%" cy="55%" r="100%">
                 <stop offset="0%" stop-color="#808080" />
@@ -676,6 +669,18 @@
                 <stop offset="90%" stop-color="#ffffff" />
                 <stop offset="100%" stop-color="#808080" />
             </radialGradient>
+        </defs>
+        <g id="ripple-source">
+            <rect width="100%" height="100%" fill="#808080" />
+            <circle id="ripple-circle-0" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="0" />
+            <circle id="ripple-circle-1" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="0" />
+            <circle id="ripple-circle-2" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="0" />
+        </g>
+    </svg>
+
+    <!-- SVG Filter for Full-Screen Ripple Distortion (Inline-Refraction GPU-based) -->
+    <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
+        <defs>
             <!-- The displacement filter mapping the R and G channels -->
             <filter id="screen-ripple-filter" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
                 <feImage href="#ripple-source" result="map" x="0%" y="0%" width="100%" height="100%" />
