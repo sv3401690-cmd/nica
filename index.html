@@ -652,14 +652,32 @@
         </div>
     </div>
 
-    <!-- SVG Filter for Full-Screen Ripple Distortion -->
-    <svg style="display: none;">
+    <!-- SVG Filter for Full-Screen Ripple Distortion (Inline-Refraction GPU-based) -->
+    <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
         <defs>
-            <filter id="screen-ripple-filter" x="-20%" y="-20%" width="140%" height="140%">
-                <!-- Procedural noise map for fluid ripples -->
-                <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="1" result="noise" id="screen-ripple-noise" seed="1" />
-                <!-- Displaces the canvas based on the noise map -->
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" id="screen-ripple-displacement" />
+            <!-- The displacement map source: neutral gray base with concentric white/black rings -->
+            <g id="ripple-source">
+                <rect width="100%" height="100%" fill="#808080" />
+                <circle id="ripple-circle" cx="50%" cy="55%" r="0%" fill="none" stroke="url(#ripple-grad)" stroke-width="140" opacity="1" />
+            </g>
+            <!-- The ripple wave packet gradient -->
+            <radialGradient id="ripple-grad" cx="50%" cy="55%" r="100%">
+                <stop offset="0%" stop-color="#808080" />
+                <stop offset="10%" stop-color="#ffffff" />
+                <stop offset="20%" stop-color="#000000" />
+                <stop offset="30%" stop-color="#ffffff" />
+                <stop offset="40%" stop-color="#000000" />
+                <stop offset="50%" stop-color="#ffffff" />
+                <stop offset="60%" stop-color="#000000" />
+                <stop offset="70%" stop-color="#ffffff" />
+                <stop offset="80%" stop-color="#000000" />
+                <stop offset="90%" stop-color="#ffffff" />
+                <stop offset="100%" stop-color="#808080" />
+            </radialGradient>
+            <!-- The displacement filter mapping the R and G channels -->
+            <filter id="screen-ripple-filter" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                <feImage href="#ripple-source" result="map" x="0%" y="0%" width="100%" height="100%" />
+                <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="R" yChannelSelector="G" id="screen-ripple-displacement" />
             </filter>
         </defs>
     </svg>
