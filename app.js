@@ -43,6 +43,7 @@ const canvas = document.getElementById('visualizer-canvas');
 const ctx = canvas.getContext('2d');
 const screenRippleMap = document.getElementById('screen-ripple-displacement');
 let screenRipples = [];
+let screenRippleScale = 0;
 let isWorkspaceActive = false;
 let isWorkspaceLocked = false;
 let currentCenterX = null;
@@ -2106,15 +2107,8 @@ function render() {
             speed: 16
         });
 
-        // Trigger full-screen concentric water ripple warp on bass hits
-        screenRipples.push({
-            radius: 0,
-            amplitude: Math.min(1.8, 1.25 * energyDifference * sensitivity), // higher initial amplitude
-            speed: 2.5,     // faster expansion
-            decay: 0.982,   // significantly slower decay so it stays strong to the edge
-            width: 22,      // wider wave packet
-            frequency: 0.25 // frequency of ripple waves
-        });
+        // Trigger full-screen GPU-based water ripple warp on bass hits
+        screenRippleScale = Math.min(30, 22 * energyDifference * sensitivity);
     }
     lastBassEnergy = bassEnergy;
 
@@ -3118,69 +3112,20 @@ function render() {
         ctx.restore();
     }
 
-    // 5. Update full-screen ripple distortion
-    let hasActiveScreenRipples = false;
-    if (toggleParticles.checked && screenRipples.length > 0) {
-        // Update ripples
-        for (let i = screenRipples.length - 1; i >= 0; i--) {
-            const ripple = screenRipples[i];
-            ripple.radius += ripple.speed;
-            ripple.amplitude *= ripple.decay;
-            // Remove if decayed or moved too far
-            if (ripple.amplitude < 0.005 || ripple.radius > 120) {
-                screenRipples.splice(i, 1);
-            }
+    // 5. Update full-screen ripple distortion (GPU-based via SVG feTurbulence)
+    if (toggleParticles.checked && screenRippleScale > 0.5) {
+        screenRippleScale *= 0.93; // decay
+        if (screenRippleMap) {
+            screenRippleMap.setAttribute('scale', screenRippleScale.toFixed(1));
         }
-
-        if (screenRipples.length > 0) {
-            hasActiveScreenRipples = true;
-            // Draw displacement map
-            const imgData = displacementCtx.createImageData(DISPLACEMENT_SIZE, DISPLACEMENT_SIZE);
-            const data = imgData.data;
-            const numPixels = DISPLACEMENT_SIZE * DISPLACEMENT_SIZE;
-
-            for (let i = 0; i < numPixels; i++) {
-                const r = rLUT[i];
-                let shift = 0;
-
-                for (let j = 0; j < screenRipples.length; j++) {
-                    const ripple = screenRipples[j];
-                    const delta = r - ripple.radius;
-                    if (Math.abs(delta) < ripple.width) {
-                        const envelope = Math.exp(-Math.pow(delta / (ripple.width * 0.5), 2));
-                        shift += Math.sin(delta * ripple.frequency) * ripple.amplitude * envelope;
-                    }
-                }
-
-                const idx = i * 4;
-                const rVal = 128 + 127 * nxLUT[i] * shift;
-                const gVal = 128 + 127 * nyLUT[i] * shift;
-
-                data[idx]     = rVal < 0 ? 0 : (rVal > 255 ? 255 : rVal | 0);
-                data[idx + 1] = gVal < 0 ? 0 : (gVal > 255 ? 255 : gVal | 0);
-                data[idx + 2] = 128;
-                data[idx + 3] = 255;
-            }
-
-            displacementCtx.putImageData(imgData, 0, 0);
-
-            // Update SVG filter image source
-            const screenRippleImage = document.getElementById('screen-ripple-image');
-            if (screenRippleImage) {
-                const dataUrl = displacementCanvas.toDataURL('image/png');
-                screenRippleImage.setAttribute('href', dataUrl);
-                screenRippleImage.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', dataUrl);
-            }
-
-            if (screenRippleMap) {
-                screenRippleMap.setAttribute('scale', '145'); // set maximum scale displacement (highly noticeable)
-            }
-            canvas.style.filter = 'url(#screen-ripple-filter)';
+        const noise = document.getElementById('screen-ripple-noise');
+        if (noise) {
+            // Animate seed to make the turbulence move dynamically
+            noise.setAttribute('seed', Math.floor(Date.now() / 60) % 1000);
         }
-    }
-
-    if (!hasActiveScreenRipples) {
-        screenRipples = [];
+        canvas.style.filter = 'url(#screen-ripple-filter)';
+    } else {
+        screenRippleScale = 0;
         if (screenRippleMap) {
             screenRippleMap.setAttribute('scale', '0');
         }
