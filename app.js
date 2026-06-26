@@ -1156,6 +1156,30 @@ function captureWorkspaceAudio() {
                 console.log("Workspace tab audio captured successfully!");
             }
         });
+    } else if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        // Fallback for Electron / Standalone App: use getDisplayMedia to capture system/window audio
+        navigator.mediaDevices.getDisplayMedia({ audio: true, video: true }).then((stream) => {
+            initAudio();
+            
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                audioStream = null;
+            }
+            
+            isMicActive = false;
+            audioStream = stream;
+            
+            if (source && source.disconnect) {
+                try { source.disconnect(); } catch (err) {}
+            }
+            
+            source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination); // Play back to user speakers
+            console.log("Workspace desktop audio captured successfully!");
+        }).catch(err => {
+            console.error("getDisplayMedia failed:", err);
+        });
     }
 }
 

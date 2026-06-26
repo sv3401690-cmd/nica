@@ -1,0 +1,12 @@
+{
+  "name": "waveflow-music-visualizer",
+  "version": "1.0.0",
+  "description": "WaveFlow Music Visualizer Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^28.2.0"
+  }
+}
