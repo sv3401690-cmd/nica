@@ -42,10 +42,12 @@ audioElement.crossOrigin = "anonymous";
 const canvas = document.getElementById('visualizer-canvas');
 const ctx = canvas.getContext('2d');
 const screenRippleMap = document.getElementById('screen-ripple-displacement');
-let screenRipples = [];
-let screenRippleScale = 0;
-let rippleProgress = 0;
-let rippleMaxScale = 0;
+let screenRipples = [
+    { progress: 0, maxScale: 0 },
+    { progress: 0, maxScale: 0 },
+    { progress: 0, maxScale: 0 }
+];
+let nextRippleIndex = 0;
 let isWorkspaceActive = false;
 let isWorkspaceLocked = false;
 let currentCenterX = null;
@@ -2110,10 +2112,9 @@ function render() {
         });
 
         // Trigger full-screen GPU-based water ripple warp on bass hits
-        if (rippleProgress === 0 || rippleProgress > 0.65) {
-            rippleProgress = 0.01;
-            rippleMaxScale = Math.min(105, 75 * energyDifference * sensitivity); // Highly visible displacement scale
-        }
+        screenRipples[nextRippleIndex].progress = 0.01;
+        screenRipples[nextRippleIndex].maxScale = Math.min(115, 80 * energyDifference * sensitivity); // Highly noticeable displacement scale!
+        nextRippleIndex = (nextRippleIndex + 1) % screenRipples.length;
     }
     lastBassEnergy = bassEnergy;
 
@@ -3118,43 +3119,69 @@ function render() {
     }
 
     // 5. Update full-screen ripple distortion (GPU-based Inline-Refraction)
-    if (toggleParticles.checked && rippleProgress > 0) {
-        // Expand the ripple radius slowly (in slomo!)
-        rippleProgress += 0.0055 * speedConfig; 
-        
-        if (rippleProgress < 1.0) {
-            // Apply a sine envelope to fade displacement in and out smoothly
-            const envelope = Math.sin(rippleProgress * Math.PI);
-            const currentScale = rippleMaxScale * envelope;
-            
-            // 1. Update the displacement scale
-            if (screenRippleMap) {
-                screenRippleMap.setAttribute('scale', currentScale.toFixed(1));
+    let totalScale = 0;
+    let hasActiveRipples = false;
+
+    if (toggleParticles.checked) {
+        for (let i = 0; i < screenRipples.length; i++) {
+            const ripple = screenRipples[i];
+            if (ripple.progress > 0) {
+                hasActiveRipples = true;
+                // Expand the ripple radius slowly (in slomo!)
+                ripple.progress += 0.0055 * speedConfig; 
+                
+                if (ripple.progress < 1.0) {
+                    const envelope = Math.sin(ripple.progress * Math.PI);
+                    const currentScale = ripple.maxScale * envelope;
+                    totalScale = Math.max(totalScale, currentScale);
+                    
+                    // Update the individual SVG circle's radius and opacity
+                    const rippleCircle = document.getElementById(`ripple-circle-${i}`);
+                    if (rippleCircle) {
+                        rippleCircle.setAttribute('r', (ripple.progress * 140) + '%');
+                        rippleCircle.setAttribute('opacity', envelope.toFixed(2));
+                    }
+                } else {
+                    // Reset this ripple
+                    ripple.progress = 0;
+                    const rippleCircle = document.getElementById(`ripple-circle-${i}`);
+                    if (rippleCircle) {
+                        rippleCircle.setAttribute('r', '0%');
+                        rippleCircle.setAttribute('opacity', '0');
+                    }
+                }
             }
-            
-            // 2. Expand the radial gradient radius (from 0% to 150%)
-            const rippleCircle = document.getElementById('ripple-circle');
-            if (rippleCircle) {
-                rippleCircle.setAttribute('r', (rippleProgress * 150) + '%');
-                // Fade out opacity slightly as it moves away
-                rippleCircle.setAttribute('opacity', envelope.toFixed(2));
-            }
-            
-            canvas.style.filter = 'url(#screen-ripple-filter)';
-        } else {
-            // Ripple completed
-            rippleProgress = 0;
-            if (screenRippleMap) {
-                screenRippleMap.setAttribute('scale', '0');
-            }
-            canvas.style.filter = '';
         }
+    }
+
+    if (hasActiveRipples && totalScale > 0.5) {
+        // Update the displacement scale
+        if (screenRippleMap) {
+            screenRippleMap.setAttribute('scale', totalScale.toFixed(1));
+        }
+        
+        // Force Chrome to refresh the feImage cache by toggling the href attribute
+        const feImage = document.querySelector('#screen-ripple-filter feImage');
+        if (feImage) {
+            feImage.setAttribute('href', '');
+            feImage.setAttribute('href', '#ripple-source');
+        }
+        
+        canvas.style.filter = 'url(#screen-ripple-filter)';
     } else {
-        rippleProgress = 0;
+        // Reset all
         if (screenRippleMap) {
             screenRippleMap.setAttribute('scale', '0');
         }
         canvas.style.filter = '';
+        // Clear all SVG circles
+        for (let i = 0; i < screenRipples.length; i++) {
+            const rippleCircle = document.getElementById(`ripple-circle-${i}`);
+            if (rippleCircle) {
+                rippleCircle.setAttribute('r', '0%');
+                rippleCircle.setAttribute('opacity', '0');
+            }
+        }
     }
 
     // Call next animation frame
