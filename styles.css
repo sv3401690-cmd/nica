@@ -1,0 +1,1330 @@
+/* ----------------------------------------------------
+   WaveFlow CSS - Modern Glassmorphism Styling
+---------------------------------------------------- */
+
+:root {
+    /* Color Palettes */
+    --theme-cyberpunk-start: #ff007f;
+    --theme-cyberpunk-end: #7f00ff;
+    --theme-sunset-start: #ff4500;
+    --theme-sunset-end: #ff8c00;
+    --theme-ocean-start: #00c6ff;
+    --theme-ocean-end: #0072ff;
+    --theme-emerald-start: #00ff87;
+    --theme-emerald-end: #60efff;
+
+    /* Default active theme (Cyberpunk) */
+    --primary-color: var(--theme-cyberpunk-start);
+    --secondary-color: var(--theme-cyberpunk-end);
+    --glow-color: rgba(255, 0, 127, 0.4);
+
+    /* Neutral darks */
+    --bg-dark: #07080d;
+    --card-bg: rgba(15, 18, 28, 0.45);
+    --card-border: rgba(255, 255, 255, 0.07);
+    --text-main: #f0f2f5;
+    --text-muted: #8e9bb0;
+    --active-tab-bg: rgba(255, 255, 255, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+/* 1. Fullscreen Canvas */
+#visualizer-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background: radial-gradient(circle at center, #10121d 0%, var(--bg-dark) 100%);
+}
+
+/* 2. Floating Glassmorphism Dashboard */
+.dashboard-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    bottom: 20px;
+    width: 380px;
+    z-index: 10;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+    -ms-overflow-style: none;  /* Hide scrollbar IE and Edge */
+}
+
+/* Dashboard Collapsed State */
+.dashboard-container.collapsed {
+    transform: translateX(-400px);
+}
+
+/* Hide Scrollbar for Chrome, Safari and Opera */
+.dashboard-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* 3. Collapse Toggle Button */
+.collapse-btn {
+    position: absolute;
+    top: 50%;
+    right: -20px;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+    z-index: 11;
+    transition: background 0.3s, color 0.3s;
+}
+.collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--primary-color);
+}
+.dashboard-container.collapsed .collapse-btn {
+    right: -50px;
+}
+.dashboard-container.collapsed .collapse-btn i {
+    transform: rotate(180deg);
+}
+
+/* 4. Header & Branding */
+.dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.logo-icon {
+    font-size: 24px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 10px var(--glow-color));
+    animation: wave-pulse 2s infinite ease-in-out;
+}
+.logo h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 40%, var(--text-muted));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: auto;
+}
+.status-dot.green {
+    background-color: #00ff87;
+    box-shadow: 0 0 10px #00ff87;
+}
+.status-dot.red {
+    background-color: #ff3366;
+    box-shadow: 0 0 10px #ff3366;
+}
+.subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* 5. Tabs */
+.tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 15px;
+}
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 9px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+.tab-btn.active {
+    color: #fff;
+    background: var(--active-tab-bg);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Tab Content toggles */
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* 6. Drag & Drop File Upload Zone */
+.drop-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 35px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--primary-color);
+    background: rgba(255, 0, 127, 0.03);
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.08);
+}
+.upload-icon {
+    font-size: 32px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+.drop-zone:hover .upload-icon {
+    color: var(--primary-color);
+    transform: translateY(-4px);
+}
+.drop-zone p {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.drop-zone span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.drop-zone input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* 7. Player Controls Panel */
+.player-panel {
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.track-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.playing-icon {
+    color: var(--primary-color);
+    animation: rot-pulse 3s infinite linear;
+}
+#track-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.player-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.player-progress input[type="range"] {
+    flex: 1;
+}
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.control-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.control-icon-btn:hover {
+    background: var(--primary-color);
+    box-shadow: 0 0 12px var(--glow-color);
+    transform: scale(1.05);
+}
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+}
+.volume-control input[type="range"] {
+    width: 70px;
+}
+
+/* 8. Microphone Section */
+.mic-status-container {
+    text-align: center;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+.btn {
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    box-shadow: 0 4px 15px var(--glow-color);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--glow-color);
+}
+.btn-primary.recording {
+    background: linear-gradient(135deg, #00ff87, #00c6ff);
+    box-shadow: 0 4px 15px rgba(0, 255, 135, 0.4);
+}
+.mic-help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* 9. Visual Adjustments Elements */
+.control-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 20px;
+}
+.control-section:last-of-type {
+    border-bottom: none;
+}
+.control-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.control-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.slider-label span {
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #fff;
+}
+
+/* Custom Styled Range Inputs */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+    transition: background 0.3s;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: var(--primary-color);
+}
+
+/* Preset Themes Color buttons */
+.theme-presets {
+    display: flex;
+    gap: 12px;
+}
+.theme-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.theme-btn:hover {
+    transform: scale(1.1);
+}
+.theme-btn.active {
+    border-color: #fff;
+    box-shadow: 0 0 15px rgba(255,255,255,0.4);
+    transform: scale(1.15);
+}
+
+/* Custom Checkbox Toggle (Frosted Glassmorphic Capsule Switch) */
+.toggle-group {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    width: 42px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 11px;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.08),
+                inset -1px -1px 3px rgba(0, 0, 0, 0.4),
+                1px 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: inline-block;
+    flex-shrink: 0;
+}
+input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.07));
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.3),
+                inset 1px 1px 1px rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+                background 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+input[type="checkbox"]:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.05);
+}
+input[type="checkbox"]:checked {
+    background: color-mix(in srgb, var(--primary-color) 22%, rgba(255, 255, 255, 0.04));
+    border-color: color-mix(in srgb, var(--primary-color) 60%, rgba(255, 255, 255, 0.2));
+    box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.15),
+                inset -1px -1px 3px rgba(0, 0, 0, 0.4),
+                0 0 12px color-mix(in srgb, var(--primary-color) 35%, transparent);
+}
+input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+    background: linear-gradient(135deg, #ffffff 60%, color-mix(in srgb, var(--primary-color) 30%, #ffffff));
+    border-color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+                inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+}
+input[type="checkbox"]:checked:hover {
+    border-color: var(--primary-color);
+}
+
+/* 10. Footer info */
+.dashboard-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: auto;
+}
+
+/* 11. Keyframe Animations */
+@keyframes wave-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+}
+@keyframes rot-pulse {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 12. Dropdown Selector Styling */
+select {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+    width: 100%;
+}
+select:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--primary-color);
+}
+select option {
+    background: #0f121c;
+    color: #fff;
+}
+
+/* Custom Dropdown Styling */
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+.custom-dropdown-trigger {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s, border-color 0.3s;
+}
+.custom-dropdown-trigger:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--primary-color);
+}
+.custom-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: rgba(15, 18, 28, 0.95);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    display: none;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+}
+.custom-dropdown-menu.show {
+    display: block;
+}
+.custom-dropdown-item {
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text-main);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.custom-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.custom-dropdown-item.selected {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    font-weight: 500;
+}
+.custom-dropdown-group-label {
+    padding: 8px 12px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 4px;
+}
+
+/* 13. Style Specific Controls Container */
+.style-specific-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 14. Custom Upload Button */
+.btn-custom-upload {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--card-border);
+    color: #fff;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s, transform 0.1s;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+}
+.btn-custom-upload:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--primary-color);
+}
+.btn-custom-upload:active {
+    transform: scale(0.98);
+}
+
+/* 15. Zen Mandala Looks Right-side Drawer */
+.zen-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    bottom: 20px;
+    width: 380px;
+    z-index: 10;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+    -ms-overflow-style: none;  /* Hide scrollbar IE and Edge */
+}
+
+/* Zen Panel Collapsed State */
+.zen-panel.collapsed {
+    transform: translateX(400px);
+}
+
+.zen-panel::-webkit-scrollbar {
+    display: none;
+}
+
+/* Symmetrical Panel Header */
+.panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 15px;
+}
+
+.panel-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Close Button on left edge of panel */
+.close-panel-btn {
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.3s;
+    z-index: 11;
+}
+
+.close-panel-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-50%) scale(1.08);
+}
+
+/* Responsive sidebar */
+@media (max-width: 900px) {
+    .zen-panel {
+        width: calc(100% - 40px);
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        top: auto;
+        height: 60vh;
+    }
+    .zen-panel.collapsed {
+        transform: translateY(100vh);
+    }
+    .close-panel-btn {
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .close-panel-btn:hover {
+        transform: translateX(-50%) scale(1.08);
+    }
+}
+
+/* 16. Energetic Phonk Mode Panels */
+.vortex-panel, .glitch-panel, .inferno-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    bottom: 20px;
+    width: 360px;
+    z-index: 10;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.vortex-panel::-webkit-scrollbar,
+.glitch-panel::-webkit-scrollbar,
+.inferno-panel::-webkit-scrollbar { display: none; }
+
+.vortex-panel.collapsed,
+.glitch-panel.collapsed,
+.inferno-panel.collapsed { transform: translateX(400px); }
+
+/* Vortex panel: crimson red accent border */
+.vortex-panel { border-color: rgba(255, 0, 60, 0.25); box-shadow: 0 12px 40px rgba(255,0,60,0.15), 0 0 0 1px rgba(255,0,60,0.1); }
+/* Glitch panel: electric cyan accent border */
+.glitch-panel { border-color: rgba(0, 240, 255, 0.25); box-shadow: 0 12px 40px rgba(0,240,255,0.15), 0 0 0 1px rgba(0,240,255,0.1); }
+/* Inferno panel: fire orange accent border */
+.inferno-panel { border-color: rgba(255, 106, 0, 0.25); box-shadow: 0 12px 40px rgba(255,106,0,0.15), 0 0 0 1px rgba(255,106,0,0.1); }
+
+@media (max-width: 900px) {
+    .vortex-panel, .glitch-panel, .inferno-panel {
+        width: calc(100% - 40px);
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        top: auto;
+        height: 60vh;
+    }
+    .vortex-panel.collapsed,
+    .glitch-panel.collapsed,
+    .inferno-panel.collapsed { transform: translateY(100vh); }
+}
+
+/* 17. Song History Panel Styling */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.history-header h3 {
+    margin: 0;
+    font-size: 12px !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.btn-icon-small {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 0.2s, transform 0.2s;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-icon-small:hover {
+    color: var(--primary-color);
+    transform: rotate(30deg);
+}
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 170px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    padding-right: 4px;
+}
+.history-list::-webkit-scrollbar {
+    width: 4px;
+}
+.history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+.history-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 15px 0;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 8px 12px;
+    gap: 8px;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.history-item.active {
+    background: rgba(0, 255, 135, 0.05);
+    border-color: rgba(0, 255, 135, 0.2);
+}
+.history-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.history-item-name {
+    font-size: 11px;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+.history-item-time {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+.history-item-actions {
+    display: flex;
+    gap: 4px;
+}
+.history-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.history-btn-play:hover {
+    background: rgba(0, 255, 135, 0.12);
+    color: #00ff87;
+}
+.history-btn-delete:hover {
+    background: rgba(255, 0, 127, 0.12);
+    color: #ff007f;
+}
+.history-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 6px;
+}
+
+/* --- 10. Split-Screen Workspace Mode --- */
+.workspace-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 33%;
+    height: 100%;
+    z-index: 100;
+    background: rgba(10, 12, 22, 0.05); /* extremely transparent dark tint */
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -10px 0 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Floating Hover Hint Badge */
+.workspace-hover-badge {
+    position: absolute;
+    top: 72px;
+    left: 50%;
+    transform: translate(-50%, -10px);
+    z-index: 1005;
+    background: rgba(10, 12, 22, 0.65);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 0, 127, 0.45);
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #ff007f;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(255, 0, 127, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+}
+
+.workspace-panel:not(.collapsed):hover .workspace-hover-badge {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+
+.workspace-panel.collapsed {
+    transform: translateX(100%);
+}
+
+.workspace-header {
+    height: 60px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: transparent; /* fully transparent header */
+}
+
+.browser-controls {
+    display: flex;
+    gap: 6px;
+    margin-right: 15px;
+}
+
+.browser-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.browser-btn:hover {
+    background: rgba(255, 0, 127, 0.15);
+    color: #ff007f;
+    border-color: rgba(255, 0, 127, 0.3);
+}
+
+.address-bar-container {
+    flex-grow: 1;
+}
+
+#workspace-address-bar {
+    width: 100%;
+    height: 36px;
+    padding: 0 15px;
+    background: rgba(7, 8, 13, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    transition: all 0.25s ease;
+}
+
+#workspace-address-bar:focus {
+    outline: none;
+    border-color: #ff007f;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.35);
+    background: rgba(7, 8, 13, 0.4);
+}
+
+.iframe-container {
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
+    background: transparent;
+}
+
+#workspace-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent; /* transparent background */
+}
+
+/* Glassmorphic Start Page/Placeholder */
+.workspace-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    box-sizing: border-box;
+    background: transparent; /* fully transparent so visualizer flows behind */
+    text-align: center;
+    z-index: 2;
+    transition: opacity 0.3s ease;
+}
+
+.placeholder-icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.pulsing-icon {
+    font-size: 32px;
+    color: var(--primary-color);
+    text-shadow: 0 0 15px var(--primary-glow);
+    animation: placeholder-pulse 2s infinite alternate;
+}
+
+@keyframes placeholder-pulse {
+    from { transform: scale(1); opacity: 0.8; }
+    to { transform: scale(1.12); opacity: 1; }
+}
+
+.workspace-placeholder h2 {
+    font-size: 22px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.workspace-placeholder p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 25px;
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+.placeholder-search {
+    display: flex;
+    width: 100%;
+    max-width: 320px;
+    background: rgba(7, 8, 13, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 3px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.25s ease;
+}
+
+.placeholder-search:focus-within {
+    border-color: #ff007f;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.35);
+    background: rgba(7, 8, 13, 0.6);
+}
+
+#placeholder-search-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    color: var(--text-main);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+}
+
+#placeholder-search-input:focus {
+    outline: none;
+}
+
+#btn-placeholder-go {
+    background: var(--primary-color);
+    border: none;
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+#btn-placeholder-go:hover {
+    background: #ff007f;
+}
+
+/* Drag & Drop Tab Overlay */
+.workspace-drag-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 33%;
+    height: 100%;
+    z-index: 9999;
+    background: rgba(10, 12, 22, 0.6);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    animation: fadeIn 0.25s ease-out;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.workspace-drag-overlay * {
+    pointer-events: none;
+}
+
+.overlay-content {
+    text-align: center;
+    padding: 30px;
+    border: 2px dashed rgba(255, 0, 127, 0.4);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    max-width: 90%;
+    width: 280px;
+}
+
+.overlay-icon {
+    font-size: 48px;
+    color: #ff007f;
+    margin-bottom: 15px;
+    text-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+    animation: pulse 1.5s infinite alternate;
+}
+
+.overlay-content h2 {
+    color: var(--text-main);
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.overlay-content p {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse {
+    from { transform: scale(1); text-shadow: 0 0 15px rgba(255, 0, 127, 0.3); }
+    to { transform: scale(1.08); text-shadow: 0 0 30px rgba(255, 0, 127, 0.6); }
+}
+
+/* Resizing adjustments for dashboard container when workspace is active */
+body.workspace-active .dashboard-container {
+    max-width: 60%;
+}
+
+/* Quick-launch Bookmark Grid */
+.workspace-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+    margin-top: 25px;
+    box-sizing: border-box;
+}
+
+.shortcut-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 10px;
+    color: var(--text-main);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+.shortcut-btn:hover {
+    background: rgba(255, 0, 127, 0.12);
+    border-color: rgba(255, 0, 127, 0.35);
+    color: #ff007f;
+    box-shadow: 0 8px 20px rgba(255, 0, 127, 0.2);
+    transform: translateY(-2px);
+}
+
+.shortcut-btn i {
+    font-size: 16px;
+}

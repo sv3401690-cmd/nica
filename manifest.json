@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "WaveFlow - Music Visualizer",
+  "version": "1.0",
+  "description": "Visualize your browser audio with stunning fluid wave animations.",
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Visualize Current Tab Audio"
+  }
+}

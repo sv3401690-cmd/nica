@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaveFlow - Interactive Music Visualizer</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- The Visualizer Canvas -->
+    <canvas id="visualizer-canvas"></canvas>
+
+    <!-- Floating UI Dashboard -->
+    <main class="dashboard-container collapsed" id="dashboard">
+        <!-- Collapse Button -->
+        <button class="collapse-btn" id="collapse-btn" title="Toggle Dashboard">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <header class="dashboard-header">
+            <div class="logo">
+                <i class="fa-solid fa-waveform-lines logo-icon"></i>
+                <h1>WaveFlow</h1>
+            </div>
+            <p class="subtitle">Interactive Audio Visualizer</p>
+        </header>
+
+        <section class="control-section">
+            <!-- Audio Input Mode Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="file-tab">
+                    Audio File
+                </button>
+                <button class="tab-btn" data-tab="mic-tab">
+                    Live Mic
+                </button>
+            </div>
+
+            <!-- Tab Content: File Upload -->
+            <div class="tab-content active" id="file-tab">
+                <div class="drop-zone" id="drop-zone">
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <p>Drag & Drop Audio File here</p>
+                    <span>or click to browse</span>
+                    <input type="file" id="file-input" accept="audio/*">
+                </div>
+
+                <!-- Custom Audio Player controls -->
+                <div class="player-panel" id="player-panel" style="display: none;">
+                    <div class="track-info">
+                        <i class="fa-solid fa-music playing-icon"></i>
+                        <span id="track-name">No track loaded</span>
+                    </div>
+                    <div class="player-progress">
+                        <span id="current-time">0:00</span>
+                        <input type="range" id="progress-bar" min="0" max="100" value="0">
+                        <span id="duration">0:00</span>
+                    </div>
+                    <div class="player-controls">
+                        <button class="control-icon-btn" id="play-pause-btn" title="Play/Pause">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <div class="volume-control">
+                            <i class="fa-solid fa-volume-high"></i>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.7">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Microphone -->
+            <div class="tab-content" id="mic-tab">
+                <div class="mic-status-container">
+                    <button class="btn btn-primary" id="start-mic-btn">
+                        <i class="fa-solid fa-power-off"></i> Enable Mic Sync
+                    </button>
+                    <p class="mic-help-text">Plays and syncs in real-time with your system audio or room microphone.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Song History Section -->
+        <section class="control-section" id="history-section">
+            <div class="history-header">
+                <h3><i class="fa-solid fa-history" style="margin-right: 6px; color: var(--primary-color);"></i> Recently Played</h3>
+                <button class="btn-icon-small" id="btn-sync-history" title="Sync & Refresh History">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+            <div class="history-list" id="history-list">
+                <!-- Placeholder for empty state -->
+                <div class="history-empty">
+                    <p>No recently played tracks.</p>
+                </div>
+            </div>
+            <div class="history-footer">
+                <span id="history-storage-info">Storage: 0 MB / 8 songs max</span>
+            </div>
+        </section>
+
+        <!-- Visual Customizer -->
+        <section class="control-section">
+            <h3><i class="fa-solid fa-sliders"></i> Visual Adjustments</h3>
+
+            <!-- Color Palette Presets -->
+            <div class="control-group">
+                <label>Color Theme</label>
+                <div class="theme-presets">
+                    <button class="theme-btn active" data-theme="cyberpunk" style="background: linear-gradient(135deg, #ff007f, #7f00ff);" title="Cyberpunk Pink/Purple"></button>
+                    <button class="theme-btn" data-theme="sunset" style="background: linear-gradient(135deg, #ff4500, #ff8c00);" title="Sunset Orange/Yellow"></button>
+                    <button class="theme-btn" data-theme="ocean" style="background: linear-gradient(135deg, #00c6ff, #0072ff);" title="Deep Ocean Blue"></button>
+                    <button class="theme-btn" data-theme="emerald" style="background: linear-gradient(135deg, #00ff87, #60efff);" title="Neon Emerald"></button>
+                </div>
+            </div>
+            <!-- Visual Style Selector -->
+            <div class="control-group">
+                <label>Visual Style</label>
+                <!-- Hidden native select for JS backwards compatibility -->
+                <select id="select-style" style="display: none;">
+                    <option value="classic">Flowing Waves (Default)</option>
+                    <option value="bars">Neon Equalizer Bars</option>
+                    <option value="starfield">Hyperspace Warp</option>
+                    <option value="zen">Zen Lotus Mandala (Calming)</option>
+                    <optgroup label="── PHONK / ENERGY ──">
+                    <option value="vortex">Chaos Vortex (Phonk Spiral)</option>
+                    <option value="glitch">Glitch Storm (Cyberpunk Disrupt)</option>
+                    <option value="inferno">Inferno Tunnel (Depth Rush)</option>
+                    <option value="phonkmix">Auto-Cycle Phonk Modes</option>
+                    </optgroup>
+                </select>
+
+                <!-- Fully customizable UI dropdown -->
+                <div class="custom-dropdown" id="custom-dropdown-style">
+                    <div class="custom-dropdown-trigger">
+                        <span id="custom-dropdown-selected-text">Flowing Waves (Default)</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-dropdown-menu" id="custom-dropdown-menu-style">
+                        <div class="custom-dropdown-item selected" data-value="classic">Flowing Waves (Default)</div>
+                        <div class="custom-dropdown-item" data-value="bars">Neon Equalizer Bars</div>
+                        <div class="custom-dropdown-item" data-value="starfield">Hyperspace Warp</div>
+                        <div class="custom-dropdown-item" data-value="zen">Zen Lotus Mandala (Calming)</div>
+                        <div class="custom-dropdown-group-label">PHONK / ENERGY</div>
+                        <div class="custom-dropdown-item" data-value="vortex">Chaos Vortex (Phonk Spiral)</div>
+                        <div class="custom-dropdown-item" data-value="glitch">Glitch Storm (Cyberpunk Disrupt)</div>
+                        <div class="custom-dropdown-item" data-value="inferno">Inferno Tunnel (Depth Rush)</div>
+                        <div class="custom-dropdown-item" data-value="phonkmix">Auto-Cycle Phonk Modes</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zen Customizer Button Trigger -->
+            <div class="control-group" id="zen-customizer-trigger" style="display: none;">
+                <button class="btn btn-secondary" id="zen-looks-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-leaf"></i> Zen Mandala Customize
+                </button>
+            </div>
+
+            <!-- Vortex Customizer Button Trigger -->
+            <div class="control-group" id="vortex-customizer-trigger" style="display: none;">
+                <button class="btn btn-secondary" id="vortex-looks-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-tornado"></i> Vortex Customize
+                </button>
+            </div>
+
+            <!-- Glitch Customizer Button Trigger -->
+            <div class="control-group" id="glitch-customizer-trigger" style="display: none;">
+                <button class="btn btn-secondary" id="glitch-looks-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-bolt"></i> Glitch Customize
+                </button>
+            </div>
+
+            <!-- Inferno Customizer Button Trigger -->
+            <div class="control-group" id="inferno-customizer-trigger" style="display: none;">
+                <button class="btn btn-secondary" id="inferno-looks-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-fire"></i> Inferno Customize
+                </button>
+            </div>
+
+            <!-- Phonk Mix Customizer Button Trigger -->
+            <div class="control-group" id="phonkmix-customizer-trigger" style="display: none;">
+                <button class="btn btn-secondary" id="phonkmix-looks-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-arrows-rotate"></i> Customize Active Style
+                </button>
+            </div>
+
+            <!-- Phonk Global Settings -->
+            <div id="style-controls-phonk-global" style="display: none; flex-direction: column; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px; gap: 15px;">
+                <div class="control-group">
+                    <div class="slider-label">
+                        <label for="slider-phonk-intensity">Phonk Intensity</label>
+                        <span id="val-phonk-intensity">70%</span>
+                    </div>
+                    <input type="range" id="slider-phonk-intensity" min="10" max="150" step="5" value="70">
+                </div>
+                <div class="control-group" id="phonk-cycle-time-container" style="display: none;">
+                    <div class="slider-label">
+                        <label for="slider-phonk-cycle-time">Cycle Interval</label>
+                        <span id="val-phonk-cycle-time">15s</span>
+                    </div>
+                    <input type="range" id="slider-phonk-cycle-time" min="5" max="60" step="5" value="15">
+                </div>
+            </div>
+
+            <!-- Visual Tuning Sliders -->
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-sensitivity">Sensitivity</label>
+                    <span id="val-sensitivity">1.5x</span>
+                </div>
+                <input type="range" id="slider-sensitivity" min="0.5" max="3" step="0.1" value="1.5">
+            </div>
+
+            <!-- Style-Specific Controls: Classic (Flowing Waves) -->
+            <div id="style-controls-classic" class="style-specific-controls">
+                <div class="control-group">
+                    <div class="slider-label">
+                        <label for="slider-waves">Wave Count</label>
+                        <span id="val-waves">5</span>
+                    </div>
+                    <input type="range" id="slider-waves" min="2" max="8" step="1" value="5">
+                </div>
+                <div class="control-group">
+                    <label for="select-wave-style">Wave Shape</label>
+                    <select id="select-wave-style">
+                        <option value="sine">Smooth Sine</option>
+                        <option value="spikes">Spiky Peaks</option>
+                        <option value="noise">Electric Noise</option>
+                    </select>
+                </div>
+                <div class="control-group toggle-group">
+                    <label for="toggle-waves">Flowing Waves</label>
+                    <input type="checkbox" id="toggle-waves" checked>
+                </div>
+                <div class="control-group toggle-group">
+                    <label for="toggle-wave-fill">Wave Fill Effect</label>
+                    <input type="checkbox" id="toggle-wave-fill">
+                </div>
+            </div>
+
+            <!-- Style-Specific Controls: Neon Equalizer Bars -->
+            <div id="style-controls-bars" class="style-specific-controls" style="display: none;">
+                <div class="control-group">
+                    <label for="select-bars-layout">Equalizer Layout</label>
+                    <select id="select-bars-layout">
+                        <option value="classic">Standard Columns</option>
+                        <option value="symmetric">Symmetrical Split</option>
+                        <option value="radial">Radial Ring</option>
+                        <option value="retro">Segmented Retro LED</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="slider-label">
+                        <label for="slider-bar-density">Bar Density</label>
+                        <span id="val-bar-density">64 bars</span>
+                    </div>
+                    <input type="range" id="slider-bar-density" min="16" max="128" step="16" value="64">
+                </div>
+                <div class="control-group">
+                    <div class="slider-label">
+                        <label for="slider-peak-decay">Peak Decay</label>
+                        <span id="val-peak-decay">Medium</span>
+                    </div>
+                    <input type="range" id="slider-peak-decay" min="1" max="10" step="1" value="5">
+                </div>
+                <div class="control-group toggle-group">
+                    <label for="toggle-peak-hold">Peak Hold Dots</label>
+                    <input type="checkbox" id="toggle-peak-hold" checked>
+                </div>
+            </div>
+
+            <!-- Style-Specific Controls: Hyperspace Warp (Starfield) -->
+            <div id="style-controls-starfield" class="style-specific-controls" style="display: none;">
+                <div class="control-group">
+                    <div class="slider-label">
+                        <label for="slider-star-count">Star Count</label>
+                        <span id="val-star-count">200</span>
+                    </div>
+                    <input type="range" id="slider-star-count" min="50" max="500" step="25" value="200">
+                </div>
+                <div class="control-group">
+                    <div class="slider-label">
+                        <label for="slider-warp-stretch">Warp Stretch</label>
+                        <span id="val-warp-stretch">2.0x</span>
+                    </div>
+                    <input type="range" id="slider-warp-stretch" min="0.5" max="5.0" step="0.1" value="2.0">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-speed">Base Speed</label>
+                    <span id="val-speed">1.0x</span>
+                </div>
+                <input type="range" id="slider-speed" min="0.2" max="2.5" step="0.1" value="1.0">
+            </div>
+
+            <!-- Custom Center Image Uploader -->
+            <div class="control-group">
+                <label>Center Image</label>
+                <button class="btn-custom-upload" id="custom-image-btn">
+                    <i class="fa-solid fa-image"></i> Upload Center Image
+                </button>
+                <input type="file" id="custom-image-input" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Toggles -->
+            <div class="control-group toggle-group">
+                <label for="toggle-center-core">Show Center Core</label>
+                <input type="checkbox" id="toggle-center-core" checked>
+            </div>
+
+            <div class="control-group toggle-group">
+                <label for="toggle-rgb">RGB Rainbow Mode</label>
+                <input type="checkbox" id="toggle-rgb">
+            </div>
+
+            <div class="control-group toggle-group">
+                <label for="toggle-particles">Glow Orbs & Beat Ripples</label>
+                <input type="checkbox" id="toggle-particles" checked>
+            </div>
+            
+            <div class="control-group toggle-group">
+                <label for="toggle-glow">Neon Glow Effect</label>
+                <input type="checkbox" id="toggle-glow" checked>
+            </div>
+
+            <!-- Workspace Toggle Action -->
+            <div class="control-group" style="margin-top: 18px; margin-bottom: 8px;">
+                <button class="btn btn-primary" id="btn-toggle-workspace" style="width: 100%; justify-content: center; background: linear-gradient(135deg, #7f00ff, #ff007f); box-shadow: 0 4px 15px rgba(255, 0, 127, 0.25);">
+                    <i class="fa-solid fa-briefcase" style="margin-right: 8px;"></i> Toggle Workspace
+                </button>
+            </div>
+        </section>
+
+        <footer class="dashboard-footer">
+            <p>Press music play or speak. Keep window active.</p>
+        </footer>
+    </main>
+
+    <!-- Zen Mandala Design Panel (Right-side drawer) -->
+    <div class="zen-panel collapsed" id="zen-customizer-panel">
+        <!-- Close Button -->
+        <button class="close-panel-btn" id="close-zen-btn" title="Close Settings">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <header class="panel-header">
+            <div class="logo">
+                <i class="fa-solid fa-leaf logo-icon"></i>
+                <h2>Zen Mandala Design</h2>
+            </div>
+            <p class="subtitle">Calming & Meditative Controls</p>
+        </header>
+
+        <section class="control-section">
+            <div class="control-group">
+                <label for="select-zen-theme">Calming Theme</label>
+                <select id="select-zen-theme">
+                    <option value="gold">Zen Gold (Meditation)</option>
+                    <option value="lotus">Sacred Lotus (Rose/Violet)</option>
+                    <option value="aurora">Northern Lights (Aurora Teal)</option>
+                    <option value="cosmic">Cosmic Blue (Indigo Glow)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-zen-petals">Petal Count</label>
+                    <span id="val-zen-petals">12 petals</span>
+                </div>
+                <input type="range" id="slider-zen-petals" min="6" max="20" step="1" value="12">
+            </div>
+
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-zen-speed">Rotation Speed</label>
+                    <span id="val-zen-speed">1.0x</span>
+                </div>
+                <input type="range" id="slider-zen-speed" min="0" max="3" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-zen-scale">Mandala Scale</label>
+                    <span id="val-zen-scale">1.0x</span>
+                </div>
+                <input type="range" id="slider-zen-scale" min="0.5" max="2.0" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-zen-fireflies">Firefly Count</label>
+                    <span id="val-zen-fireflies">25</span>
+                </div>
+                <input type="range" id="slider-zen-fireflies" min="0" max="50" step="5" value="25">
+            </div>
+
+            <div class="control-group toggle-group">
+                <label for="toggle-zen-ring">Sacred Orbit Ring</label>
+                <input type="checkbox" id="toggle-zen-ring" checked>
+            </div>
+        </section>
+    </div>
+
+    <!-- Chaos Vortex Customizer Panel (Right-side drawer) -->
+    <div class="vortex-panel collapsed" id="vortex-customizer-panel">
+        <button class="close-panel-btn" id="close-vortex-btn" title="Close Settings">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <header class="panel-header">
+            <div class="logo">
+                <i class="fa-solid fa-tornado logo-icon" style="color:#ff003c;"></i>
+                <h2>Chaos Vortex</h2>
+            </div>
+            <p class="subtitle">Phonk Spiral Controls</p>
+        </header>
+        <section class="control-section">
+            <div class="control-group">
+                <label for="select-vortex-theme">Vortex Theme</label>
+                <select id="select-vortex-theme">
+                    <option value="crimson">Crimson Fire</option>
+                    <option value="electric">Electric Purple</option>
+                    <option value="ice">Ice Storm</option>
+                    <option value="toxic">Toxic Neon</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-vortex-arms">Arm Count</label>
+                    <span id="val-vortex-arms">6</span>
+                </div>
+                <input type="range" id="slider-vortex-arms" min="2" max="12" step="1" value="6">
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-vortex-particles">Particle Count</label>
+                    <span id="val-vortex-particles">400</span>
+                </div>
+                <input type="range" id="slider-vortex-particles" min="100" max="800" step="50" value="400">
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-vortex-spin">Spin Speed</label>
+                    <span id="val-vortex-spin">2.0x</span>
+                </div>
+                <input type="range" id="slider-vortex-spin" min="0.5" max="5" step="0.1" value="2.0">
+            </div>
+            <div class="control-group toggle-group">
+                <label for="toggle-vortex-flare">Beat Pulse Flare</label>
+                <input type="checkbox" id="toggle-vortex-flare" checked>
+            </div>
+        </section>
+    </div>
+
+    <!-- Glitch Storm Customizer Panel (Right-side drawer) -->
+    <div class="glitch-panel collapsed" id="glitch-customizer-panel">
+        <button class="close-panel-btn" id="close-glitch-btn" title="Close Settings">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <header class="panel-header">
+            <div class="logo">
+                <i class="fa-solid fa-bolt logo-icon" style="color:#00f0ff;"></i>
+                <h2>Glitch Storm</h2>
+            </div>
+            <p class="subtitle">Cyberpunk Disrupt Controls</p>
+        </header>
+        <section class="control-section">
+            <div class="control-group">
+                <label for="select-glitch-theme">Glitch Style</label>
+                <select id="select-glitch-theme">
+                    <option value="cyberpunk">Cyberpunk Red</option>
+                    <option value="matrix">Matrix Green</option>
+                    <option value="plasma">UV Plasma</option>
+                    <option value="ghost">Ghost White</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-glitch-intensity">Glitch Intensity</label>
+                    <span id="val-glitch-intensity">5</span>
+                </div>
+                <input type="range" id="slider-glitch-intensity" min="1" max="10" step="1" value="5">
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-glitch-chroma">Chromatic Spread</label>
+                    <span id="val-glitch-chroma">20px</span>
+                </div>
+                <input type="range" id="slider-glitch-chroma" min="0" max="40" step="2" value="20">
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-glitch-scanlines">Scanline Opacity</label>
+                    <span id="val-glitch-scanlines">40%</span>
+                </div>
+                <input type="range" id="slider-glitch-scanlines" min="0" max="80" step="5" value="40">
+            </div>
+            <div class="control-group toggle-group">
+                <label for="toggle-glitch-lightning">Lightning Bolts</label>
+                <input type="checkbox" id="toggle-glitch-lightning" checked>
+            </div>
+        </section>
+    </div>
+
+    <!-- Inferno Tunnel Customizer Panel (Right-side drawer) -->
+    <div class="inferno-panel collapsed" id="inferno-customizer-panel">
+        <button class="close-panel-btn" id="close-inferno-btn" title="Close Settings">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <header class="panel-header">
+            <div class="logo">
+                <i class="fa-solid fa-fire logo-icon" style="color:#ff6a00;"></i>
+                <h2>Inferno Tunnel</h2>
+            </div>
+            <p class="subtitle">Depth Rush Controls</p>
+        </header>
+        <section class="control-section">
+            <div class="control-group">
+                <label for="select-inferno-theme">Tunnel Theme</label>
+                <select id="select-inferno-theme">
+                    <option value="hellfire">Hellfire Red</option>
+                    <option value="electric">Electric Blue</option>
+                    <option value="acid">Toxic Acid</option>
+                    <option value="ghost">Ghost Neon</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="select-inferno-shape">Ring Shape</label>
+                <select id="select-inferno-shape">
+                    <option value="circle">Circle</option>
+                    <option value="hexagon">Hexagon</option>
+                    <option value="diamond">Diamond</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-inferno-speed">Tunnel Speed</label>
+                    <span id="val-inferno-speed">3.0x</span>
+                </div>
+                <input type="range" id="slider-inferno-speed" min="1" max="8" step="0.5" value="3.0">
+            </div>
+            <div class="control-group">
+                <div class="slider-label">
+                    <label for="slider-inferno-density">Ring Density</label>
+                    <span id="val-inferno-density">12</span>
+                </div>
+                <input type="range" id="slider-inferno-density" min="5" max="20" step="1" value="12">
+            </div>
+            <div class="control-group toggle-group">
+                <label for="toggle-inferno-fire">Fire Particles</label>
+                <input type="checkbox" id="toggle-inferno-fire" checked>
+            </div>
+        </section>
+    </div>
+
+    <!-- Workspace Panel (Right-side split screen browser) -->
+    <div class="workspace-panel collapsed" id="workspace-panel">
+        <!-- Floating Hover Hint Badge -->
+        <div class="workspace-hover-badge" id="workspace-hover-badge">
+            <i class="fa-solid fa-angles-down"></i> Drag your website
+        </div>
+        <header class="workspace-header">
+            <div class="browser-controls">
+                <button class="browser-btn" id="btn-browser-back" title="Go Back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <button class="browser-btn" id="btn-browser-forward" title="Go Forward">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button class="browser-btn" id="btn-browser-reload" title="Reload Page">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button class="browser-btn" id="btn-browser-home" title="Return to Start Page">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <button class="browser-btn" id="btn-workspace-lock" title="Lock Panel Open">
+                    <i class="fa-solid fa-lock-open"></i>
+                </button>
+            </div>
+            <div class="address-bar-container">
+                <input type="text" id="workspace-address-bar" placeholder="Enter URL (e.g. google.com, wikipedia.org)..." value="">
+            </div>
+            <button class="close-panel-btn" id="close-workspace-btn" title="Close Workspace" style="position: relative; top: auto; right: auto; margin-left: 10px; width: 36px; height: 36px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+        <div class="iframe-container">
+            <!-- Glassmorphic start/placeholder page -->
+            <div class="workspace-placeholder" id="workspace-placeholder">
+                <div class="placeholder-icon-container">
+                    <i class="fa-solid fa-square-plus pulsing-icon"></i>
+                </div>
+                <h2>Workspace Browser</h2>
+                <p>Drag your website here or use the search bar below.</p>
+                <div class="placeholder-search">
+                    <input type="text" id="placeholder-search-input" placeholder="Type URL or search Google...">
+                    <button id="btn-placeholder-go" title="Load Site"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+                <div class="workspace-shortcuts">
+                    <button class="shortcut-btn" data-url="https://open.spotify.com/playlist/1hzoMLrlbjjj6iAcqsSC5X?si=zw94t9onRUacBK0dL78jLw">
+                        <i class="fa-brands fa-spotify" style="color: #1DB954;"></i> Spotify
+                    </button>
+                    <button class="shortcut-btn" data-url="https://www.google.com/search?igu=1">
+                        <i class="fa-brands fa-google" style="color: #4285F4;"></i> Google
+                    </button>
+                    <button class="shortcut-btn" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk">
+                        <i class="fa-brands fa-youtube" style="color: #FF0000;"></i> YouTube
+                    </button>
+                    <button class="shortcut-btn" data-url="https://www.wikipedia.org">
+                        <i class="fa-solid fa-book" style="color: #FFFFFF;"></i> Wikipedia
+                    </button>
+                </div>
+            </div>
+            <!-- Glassmorphic Spotify Help Page -->
+            <div class="workspace-placeholder" id="workspace-spotify-help" style="display: none;">
+                <div class="placeholder-icon-container" style="border-color: rgba(255, 0, 127, 0.4); margin-bottom: 15px;">
+                    <i class="fa-brands fa-spotify pulsing-icon" style="color: #1DB954;"></i>
+                </div>
+                <h2 style="font-size: 20px;">Load Liked Songs</h2>
+                <p style="max-width: 290px; font-size: 13px; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4;">
+                    Spotify blocks private "Liked Songs" in side panels. Use this simple 15-second workaround:
+                </p>
+                <div style="text-align: left; max-width: 290px; font-size: 12px; color: var(--text-main); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; line-height: 1.6; box-sizing: border-box;">
+                    <ol style="margin: 0; padding-left: 15px;">
+                        <li style="margin-bottom: 8px;">Create a <strong>New Playlist</strong> in Spotify (e.g. "My Liked Songs").</li>
+                        <li style="margin-bottom: 8px;">Select your Liked Songs and copy them into this new playlist.</li>
+                        <li>Right-click the playlist, choose <strong>Share</strong> &rarr; <strong>Copy Link</strong>, and paste/drag it here!</li>
+                    </ol>
+                </div>
+                <button id="btn-spotify-help-back" style="background: linear-gradient(135deg, #7f00ff, #ff007f); border: none; padding: 10px 24px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; color: white; transition: transform 0.2s;">
+                    Got it, back to home
+                </button>
+            </div>
+            <iframe id="workspace-iframe" src="" allow="autoplay; clipboard-write; clipboard-read; encrypted-media; fullscreen" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <!-- Drag & Drop Tab/Link Overlay -->
+    <div class="workspace-drag-overlay" id="workspace-drag-overlay" style="display: none;">
+        <div class="overlay-content">
+            <i class="fa-solid fa-square-plus overlay-icon"></i>
+            <h2>Drag your website</h2>
+            <p>Drop here to load inside your workspace</p>
+        </div>
+    </div>
+
+    <!-- SVG Filter for Full-Screen Ripple Distortion -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="screen-ripple-filter" x="0%" y="0%" width="100%" height="100%">
+                <!-- Reference the dynamic displacement canvas pattern -->
+                <feImage id="screen-ripple-image" result="ripple-map" x="0%" y="0%" width="100%" height="100%" preserveAspectRatio="none" />
+                <!-- Displaces canvas pixels based on the red/green channels of the image -->
+                <feDisplacementMap in="SourceGraphic" in2="ripple-map" scale="0" xChannelSelector="R" yChannelSelector="G" id="screen-ripple-displacement" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
