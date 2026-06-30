@@ -2098,10 +2098,9 @@ function render() {
     }
 
     // 3b. Beat Detection & Concentric Shockwaves (uses raw bassEnergy to fire beats instantly without smoothing delay)
-    const beatThreshold = 0.48;
+    const beatThreshold = 0.38;
     const energyDifference = bassEnergy - lastBassEnergy;
-    if (bassEnergy > beatThreshold && energyDifference > 0.08 && toggleParticles.checked) {
-        // shockwaves.push(new Shockwave(centerX, centerY, activeStartColor));
+    if (bassEnergy > beatThreshold && energyDifference > 0.05 && toggleParticles.checked) {
         // Spawn a physical wave-packet ripple along the flowing waves on beats
         waveRipples.push({
             x: centerX,
@@ -2113,7 +2112,7 @@ function render() {
 
         // Trigger full-screen GPU-based water ripple warp on bass hits
         screenRipples[nextRippleIndex].progress = 0.01;
-        screenRipples[nextRippleIndex].maxScale = Math.min(115, 80 * energyDifference * sensitivity); // Highly noticeable displacement scale!
+        screenRipples[nextRippleIndex].maxScale = 45 + Math.min(185, 160 * energyDifference * sensitivity); // Highly noticeable displacement scale!
         nextRippleIndex = (nextRippleIndex + 1) % screenRipples.length;
     }
     lastBassEnergy = bassEnergy;
